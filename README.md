@@ -76,9 +76,9 @@ API защищён через Basic Auth.
 
 ---
 
-## 🔧 Дополнительно
+## Дополнительно
 
-### 📊 H2 Console
+### H2 Console
 - URL: [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
 - JDBC: `jdbc:h2:mem:tasksdb`
 - Пользователь: `sa`, без пароля

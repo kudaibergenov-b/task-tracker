@@ -20,11 +20,13 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .httpBasic(httpBasic -> {});
+
         return http.build();
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
+
         return new InMemoryUserDetailsManager(
             User.withUsername("admin")
                 .password("{noop}password")
