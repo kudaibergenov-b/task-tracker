@@ -1,18 +1,19 @@
 package com.kudaibergenov.spring.service;
 
-import com.kudaibergenov.spring.model.Task;
+import com.kudaibergenov.spring.dto.TaskRequest;
+import com.kudaibergenov.spring.dto.TaskResponse;
 
 import java.util.List;
 
 public interface TaskService {
 
-    Task create(Task task);
+    TaskResponse create(TaskRequest request);
 
-    Task update(Long id, Task task);
+    TaskResponse update(Long id, TaskRequest request);
 
-    Task getById(Long id);
+    TaskResponse getById(Long id);
 
-    List<Task> getAll();
+    List<TaskResponse> getAll();
 
     void delete(Long id);
 }

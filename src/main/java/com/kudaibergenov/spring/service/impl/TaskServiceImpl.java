@@ -1,9 +1,13 @@
 package com.kudaibergenov.spring.service.impl;
 
+import com.kudaibergenov.spring.dto.TaskResponse;
+import com.kudaibergenov.spring.dto.TaskRequest;
+import com.kudaibergenov.spring.mapper.TaskMapper;
 import com.kudaibergenov.spring.model.Task;
 import com.kudaibergenov.spring.repository.TaskRepository;
 import com.kudaibergenov.spring.service.EmailService;
 import com.kudaibergenov.spring.service.TaskService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -20,11 +24,14 @@ public class TaskServiceImpl implements TaskService {
 
     private final EmailService emailService;
 
+    private final TaskMapper taskMapper;
+
     private final Environment environment;
 
     @CacheEvict(value = "tasks", allEntries = true)
     @Override
-    public Task create(Task task) {
+    public TaskResponse create(TaskRequest request) {
+        Task task = taskMapper.toEntity(request);
         Task saved = taskRepository.save(task);
 
         emailService.sendTaskCreatedNotification(
@@ -33,30 +40,32 @@ public class TaskServiceImpl implements TaskService {
                 "Заголовок: " + task.getTitle() + "\nОписание: " + task.getDescription()
         );
 
-        return saved;
+        return taskMapper.toResponse(saved);
+    }
+
+    @Override
+    public TaskResponse getById(Long id) {
+        return taskMapper.toResponse(taskRepository.findById(id).orElseThrow(() ->
+                new EntityNotFoundException("Задача с id=" + id + " не найдена")
+        ));
+    }
+
+    @Cacheable("tasks")
+    @Override
+    public List<TaskResponse> getAll() {
+        return taskMapper.toResponseList(taskRepository.findAll());
     }
 
     @CacheEvict(value = "tasks", allEntries = true)
     @Override
-    public Task update(Long id, Task task) {
-        Task existing = taskRepository.findById(id).orElseThrow();
+    public TaskResponse update(Long id, TaskRequest request) {
+        Task task = taskRepository.findById(id).orElseThrow();
 
-        existing.setTitle(task.getTitle());
-        existing.setDescription(task.getDescription());
-        existing.setCompleted(task.isCompleted());
+        task.setTitle(request.getTitle());
+        task.setDescription(request.getDescription());
+        task.setCompleted(request.isCompleted());
 
-        return taskRepository.save(existing);
-    }
-
-    @Override
-    public Task getById(Long id) {
-        return taskRepository.findById(id).orElseThrow();
-    }
-
-    @Override
-    @Cacheable("tasks")
-    public List<Task> getAll() {
-        return taskRepository.findAll();
+        return taskMapper.toResponse(taskRepository.save(task));
     }
 
     @CacheEvict(value = "tasks", allEntries = true)
